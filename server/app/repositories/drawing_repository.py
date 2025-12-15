@@ -1,6 +1,8 @@
 from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+from app.models.drawing import Drawing
+from app.models.enums import DrawingStatus
 
 
 class DrawingRepository:
@@ -8,6 +10,10 @@ class DrawingRepository:
     Repository layer for Drawing-related DB operations.
     All DB access related to drawings should live here.
     """
+
+    # =============================
+    # WRITE OPERATIONS (CONCURRENCY)
+    # =============================
 
     @staticmethod
     def claim_drawing(
@@ -18,11 +24,6 @@ class DrawingRepository:
     ) -> bool:
         """
         Atomically claim a drawing.
-
-        - Only succeeds if:
-            - drawing exists
-            - drawing is in expected_status
-            - drawing is NOT already assigned
 
         Returns:
             True  -> claim successful
@@ -49,3 +50,37 @@ class DrawingRepository:
         )
 
         return result.fetchone() is not None
+
+#Read
+
+    @staticmethod
+    def get_all(db: Session):
+        """Admin: get all drawings"""
+        return db.query(Drawing).all()
+
+    @staticmethod
+    def get_assigned_to_user(
+        db: Session,
+        user_id: UUID,
+    ):
+        """Get drawings assigned to current user"""
+        return (
+            db.query(Drawing)
+            .filter(Drawing.assigned_to == user_id)
+            .all()
+        )
+
+    @staticmethod
+    def get_available_for_status(
+        db: Session,
+        status: DrawingStatus,
+    ):
+        """Get unassigned drawings for a given workflow state"""
+        return (
+            db.query(Drawing)
+            .filter(
+                Drawing.status == status.value,
+                Drawing.assigned_to.is_(None),
+            )
+            .all()
+        )
