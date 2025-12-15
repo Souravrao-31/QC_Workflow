@@ -85,3 +85,24 @@ def available_drawings(
     current_user: CurrentUser = Depends(get_current_user),
 ):
     return DrawingService.get_available_drawings(db, current_user.role)
+
+
+@router.post("/{drawing_id}/release")
+def release_drawing(
+    drawing_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    drawing = get_drawing_or_404(db, drawing_id)
+
+    try:
+        DrawingService.release(
+            db=db,
+            drawing=drawing,
+            user_id=current_user.id,
+        )
+    except NotOwner as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
+    return {"status": "released"}
+

@@ -11,9 +11,9 @@ class DrawingRepository:
     All DB access related to drawings should live here.
     """
 
-    # =============================
-    # WRITE OPERATIONS (CONCURRENCY)
-    # =============================
+    
+    # WRITE OPERATIONS (CONCURRENCY) handle racing events
+   
 
     @staticmethod
     def claim_drawing(
@@ -84,3 +84,37 @@ class DrawingRepository:
             )
             .all()
         )
+    
+          
+          
+    @staticmethod
+    def release_drawing(
+            db: Session,
+            drawing_id: UUID,
+            user_id: UUID,
+    ) -> bool:
+        """
+        Release a drawing lock.
+
+        Only succeeds if:
+        - drawing is assigned to user_id
+        """
+
+        result = db.execute(
+            text(
+                """
+                UPDATE drawings
+                SET assigned_to = NULL,
+                    locked_at = NULL
+                WHERE id = :drawing_id
+                AND assigned_to = :user_id
+                RETURNING id
+                """
+            ),
+            {
+                "drawing_id": drawing_id,
+                "user_id": user_id,
+            },
+        )
+
+        return result.fetchone() is not None

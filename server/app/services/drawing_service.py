@@ -87,4 +87,21 @@ class DrawingService:
             db,
             role_status_map[role],
         )
+        
+    @staticmethod
+    def release(
+        db: Session,
+        drawing: Drawing,
+        user_id: UUID,
+    ):
+        success = DrawingRepository.release_drawing(
+            db=db,
+            drawing_id=drawing.id,
+            user_id=user_id,
+        )
+
+        if not success:
+            raise NotOwner("You do not own this drawing")
+
+        db.commit()
 
