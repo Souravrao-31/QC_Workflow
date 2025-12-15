@@ -25,3 +25,17 @@ def get_db():
 
 
 Base = declarative_base()
+
+
+# python - <<EOF
+# from app.core.database import engine
+# engine.connect()
+# print("Database connected successfully")
+# EOF
+
+# python - <<EOF
+# from app.models.user import User
+# from app.models.drawing import Drawing
+# print(User.__tablename__)
+# print(Drawing.__tablename__)
+# EOF
