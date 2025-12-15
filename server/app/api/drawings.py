@@ -6,6 +6,7 @@ from app.core.database import get_db
 from app.core.dependencies import get_current_user, CurrentUser
 from app.models.drawing import Drawing
 from app.schemas.drawing_action import DrawingActionRequest
+from app.schemas.drawing import DrawingResponse
 from app.services.drawing_service import DrawingService
 from app.services.exceptions import (
     PermissionDenied,
@@ -57,3 +58,30 @@ def perform_drawing_action(
         raise HTTPException(status_code=400, detail=str(e))
 
     return {"status": "success"}
+
+
+@router.get("", response_model=list[DrawingResponse])
+def list_all_drawings(
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    if current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    return DrawingService.get_all_drawings(db, current_user.role)
+
+
+@router.get("/me", response_model=list[DrawingResponse])
+def my_drawings(
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    return DrawingService.get_my_drawings(db, current_user.id)
+
+
+@router.get("/available", response_model=list[DrawingResponse])
+def available_drawings(
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    return DrawingService.get_available_drawings(db, current_user.role)
