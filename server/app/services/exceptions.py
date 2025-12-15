@@ -16,3 +16,6 @@ class DrawingAlreadyClaimed(WorkflowError):
 
 class NotOwner(WorkflowError):
     pass
+
+class InvalidCredentials(Exception):
+    pass

@@ -1,11 +1,16 @@
-from pydantic import BaseModel
+
+from pydantic import BaseModel, Field
 
 
 class Token(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
+    access_token: str = Field(..., description="JWT access token")
+    token_type: str = Field(
+        default="bearer",
+        description="Authentication scheme",
+        examples=["bearer"],
+    )
 
 
 class LoginRequest(BaseModel):
-    email: str
+    name: str
     password: str
