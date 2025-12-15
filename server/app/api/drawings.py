@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from uuid import UUID
 
 from app.core.database import get_db
+from app.core.dependencies import get_current_user, CurrentUser
 from app.models.drawing import Drawing
 from app.schemas.drawing_action import DrawingActionRequest
 from app.services.drawing_service import DrawingService
@@ -26,15 +27,12 @@ def get_drawing_or_404(
     return drawing
 
 
-
 @router.post("/{drawing_id}/actions")
 def perform_drawing_action(
     drawing_id: UUID,
     request: DrawingActionRequest,
     db: Session = Depends(get_db),
-    # hardcoded user (we’ll replace with auth later)
-    user_id: UUID = Depends(lambda: UUID("00")),
-    user_role: str = Depends(lambda: "SHIFT_LEAD"),
+    current_user: CurrentUser = Depends(get_current_user),
 ):
     drawing = get_drawing_or_404(db, drawing_id)
 
@@ -42,8 +40,8 @@ def perform_drawing_action(
         DrawingService.perform_action(
             db=db,
             drawing=drawing,
-            user_id=user_id,
-            user_role=user_role,
+            user_id=current_user.id,
+            user_role=current_user.role,
             action=request.action.value,
         )
     except PermissionDenied as e:

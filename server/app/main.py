@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from app.api.drawings import router as drawings_router
+from app.api.auth import router as auth_router
+
 
 app = FastAPI(
     title="QC Workflow System",
@@ -7,6 +9,8 @@ app = FastAPI(
 )
 
 app.include_router(drawings_router)
+app.include_router(auth_router)
+
 
 @app.get("/health")
 def health_check():
