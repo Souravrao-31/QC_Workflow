@@ -27,10 +27,10 @@ class DrawingRepository:
                 """
                 UPDATE drawings
                 SET assigned_to = :user_id,
-                    locked_at = NOW()
+                    locked_at = now()
                 WHERE id = :drawing_id
-                AND status = :expected_status
-                AND assigned_to IS NULL
+                  AND status = :expected_status
+                  AND assigned_to IS NULL
                 RETURNING id
                 """
             ),

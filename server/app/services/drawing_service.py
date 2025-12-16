@@ -35,7 +35,12 @@ class DrawingService:
         # Validate role
         if user_role != rule["role"]:
             raise PermissionDenied("Role not allowed")
-
+        
+        
+        if current_state == DrawingStatus.APPROVED:
+            raise InvalidStateTransition(
+            "No actions are allowed on an approved drawing"
+            )   
         #  CLAIM (raw SQL)
         if action == "CLAIM":
             success = DrawingRepository.claim_drawing(
@@ -48,7 +53,7 @@ class DrawingService:
                 raise DrawingAlreadyClaimed()
 
             db.commit()
-            db.expire_all()   # 🔥 IMPORTANT
+            db.expire_all()   # IMPORTANT in dev env
             return
 
         #  Ownership check
