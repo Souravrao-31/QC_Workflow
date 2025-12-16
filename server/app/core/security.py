@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
-from jose import jwt
+from jose import jwt, JWTError
 from passlib.context import CryptContext
+from app.core.config import settings
 
 SECRET_KEY = ""
 ALGORITHM = "HS256"
@@ -24,3 +25,14 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     )
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def decode_access_token(token: str):
+    try:
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM],
+        )
+        return payload
+    except JWTError:
+        return None
