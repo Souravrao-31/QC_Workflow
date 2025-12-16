@@ -29,7 +29,7 @@ export default function LoginPage() {
 
     try {
       const { access_token } = await login(name, password);
-
+    
       //  Save JWT
       saveToken(access_token);
 
@@ -65,10 +65,7 @@ export default function LoginPage() {
 
           <FormControl>
             <FormLabel>Name</FormLabel>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
           </FormControl>
 
           <FormControl>

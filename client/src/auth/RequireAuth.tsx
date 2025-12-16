@@ -1,24 +1,13 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 
-
-export type UserRole =
-  | "ADMIN"
-  | "DRAFTER"
-  | "SHIFT_LEAD"
-  | "FINAL_QC";
+export type UserRole = "ADMIN" | "DRAFTER" | "SHIFT_LEAD" | "FINAL_QC";
 
 export interface AuthUser {
   id: string;
   role: UserRole;
 }
-
 
 interface AuthContextType {
   user: AuthUser;
@@ -27,39 +16,43 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-
-export function RequireAuth({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function RequireAuth({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
+
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("qc_access_token");
 
     if (!token) {
       navigate("/");
       return;
     }
 
-    // Decode payload safely
-    const payload = JSON.parse(
-      atob(token.split(".")[1])
-    );
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
 
-    setUser({
-      id: payload.sub,
-      role: payload.role,
-    });
+      setUser({
+        id: payload.sub,
+        role: payload.role,
+      });
 
-    // Attach token to axios
-    api.defaults.headers.common.Authorization = `Bearer ${token}`;
+      api.defaults.headers.common.Authorization = `Bearer ${token}`;
+    } catch {
+      localStorage.removeItem("qc_access_token");
+      navigate("/");
+    } finally {
+      setLoading(false);
+    }
   }, [navigate]);
 
+  if (loading) {
+    return null; // or spinner
+  }
+
   if (!user) {
-    return null; // Or loading spinner
+    return null;
   }
 
   return (
@@ -69,11 +62,10 @@ export function RequireAuth({
   );
 
   function logout() {
-    localStorage.removeItem("access_token");
+    localStorage.removeItem("qc_access_token");
     navigate("/");
   }
 }
-
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
