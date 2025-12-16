@@ -6,7 +6,7 @@ export interface LoginResponse {
 }
 
 export async function login(name: string, password: string) {
-  const response = await api.post<LoginResponse>("/login", {
+  const response = await api.post<LoginResponse>("/auth/login", {
     name,
     password,
   });
