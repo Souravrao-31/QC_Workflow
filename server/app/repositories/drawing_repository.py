@@ -6,9 +6,47 @@ from app.models.enums import DrawingStatus
 
 
 class DrawingRepository:
-
-    # WRITE OPERATIONS (CONCURRENCY) handle racing events
    
+    @staticmethod
+    def list_unassigned(db: Session):
+        return (
+            db.query(Drawing)
+            .filter(Drawing.status == DrawingStatus.UNASSIGNED)
+            .all()
+        )
+
+    @staticmethod
+    def list_drafting_unclaimed(db: Session):
+        return (
+            db.query(Drawing)
+            .filter(
+                Drawing.status == DrawingStatus.DRAFTING,
+                Drawing.assigned_to.is_(None),
+            )
+            .all()
+        )
+
+    @staticmethod
+    def list_first_qc_unclaimed(db: Session):
+        return (
+            db.query(Drawing)
+            .filter(
+                Drawing.status == DrawingStatus.FIRST_QC,
+                Drawing.assigned_to.is_(None),
+            )
+            .all()
+        )
+
+    @staticmethod
+    def list_final_qc_unclaimed(db: Session):
+        return (
+            db.query(Drawing)
+            .filter(
+                Drawing.status == DrawingStatus.FINAL_QC,
+                Drawing.assigned_to.is_(None),
+            )
+            .all()
+        )
 
     @staticmethod
     def claim_drawing(

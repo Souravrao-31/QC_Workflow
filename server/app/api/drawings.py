@@ -61,14 +61,11 @@ def perform_drawing_action(
 
 
 @router.get("", response_model=list[DrawingResponse])
-def list_all_drawings(
+def list_drawings(
     db: Session = Depends(get_db),
     current_user: CurrentUser = Depends(get_current_user),
 ):
-    if current_user.role != "ADMIN":
-        raise HTTPException(status_code=403, detail="Forbidden")
-
-    return DrawingService.get_all_drawings(db, current_user.role)
+    return DrawingService.list_drawings_for_user(db, current_user)
 
 
 @router.get("/me", response_model=list[DrawingResponse])
