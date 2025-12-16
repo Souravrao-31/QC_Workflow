@@ -6,7 +6,7 @@ from app.core.dependencies import get_current_user, CurrentUser
 from app.schemas.user import CreateUserRequest, UserResponse
 from app.services.user_service import UserService
 from app.services.exceptions import PermissionDenied
-
+from app.core.permissions import require_roles
 router = APIRouter(prefix="/admin/users", tags=["Admin"])
 
 
@@ -18,7 +18,7 @@ router = APIRouter(prefix="/admin/users", tags=["Admin"])
 def create_user(
     request: CreateUserRequest,
     db: Session = Depends(get_db),
-    current_user: CurrentUser = Depends(get_current_user),
+    current_user: CurrentUser = Depends(get_current_user), #todo permission
 ):
     try:
         user = UserService.create_user(
