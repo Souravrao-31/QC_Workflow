@@ -5,6 +5,7 @@ export interface Drawing {
   status: string;
   assigned_to: string | null;
   assigned_to_name?: string | null;
+  title: string
 }
 
 export async function fetchDrawings(): Promise<Drawing[]> {

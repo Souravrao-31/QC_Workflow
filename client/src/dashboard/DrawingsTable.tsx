@@ -59,13 +59,13 @@ export default function DrawingsTable() {
       </Center>
     );
   }
-
+  console.log("drawings.....", drawings);
   return (
     <Box bg="white" p={4} rounded="md" shadow="sm">
       <Table variant="simple">
         <Thead>
           <Tr>
-            <Th>Drawing ID</Th>
+            <Th>Drawing Name</Th>
             <Th>Status</Th>
             <Th>Assigned To</Th>
             <Th>Actions</Th>
@@ -74,12 +74,10 @@ export default function DrawingsTable() {
 
         <Tbody>
           {drawings.map((d) => (
-            <Tr key={d.id}>
-              <Td>{d.id.slice(0, 8)}</Td>
+            <Tr key={d?.title}>
+              <Td>{d.title.slice(0, 15)}</Td>
               <Td>
-                <Badge colorScheme={statusColor(d.status)}>
-                  {d.status}
-                </Badge>
+                <Badge colorScheme={statusColor(d.status)}>{d.status}</Badge>
               </Td>
               <Td>{d.assigned_to_name ?? "—"}</Td>
               <Td>
