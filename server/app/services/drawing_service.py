@@ -24,44 +24,51 @@ class DrawingService:
     ):
         current_state = DrawingStatus(drawing.status)
 
-        #  Validate action exists
+        #  Validate action
         if action not in WORKFLOW_TRANSITIONS.get(current_state, {}):
-           raise InvalidStateTransition(
+            raise InvalidStateTransition(
                 f"Action '{action}' is not allowed when drawing is in '{current_state.value}' state"
             )
 
         rule = WORKFLOW_TRANSITIONS[current_state][action]
 
-        #  Validate role
+        # Validate role
         if user_role != rule["role"]:
             raise PermissionDenied("Role not allowed")
 
-        # CLAIM action (locking)
+        #  CLAIM (raw SQL)
         if action == "CLAIM":
             success = DrawingRepository.claim_drawing(
                 db=db,
                 drawing_id=drawing.id,
                 user_id=user_id,
-                expected_status=current_state,
+                expected_status=current_state.value,
             )
             if not success:
                 raise DrawingAlreadyClaimed()
+
+            db.commit()
+            db.expire_all()   # 🔥 IMPORTANT
             return
-      # Ownership check only for actions that require ownership
+
+        #  Ownership check
         if action in {"SUBMIT", "APPROVE"}:
             if drawing.assigned_to != user_id:
                 raise NotOwner("Only current assignee can perform this action")
 
-        # 5️⃣ Transition state
+        #  CRITICAL FIX
+        db.refresh(drawing)
+
+        # Transition state
         drawing.status = rule["next"].value
 
-        #  Release lock if required
+        #  Release lock
         if not rule["lock"]:
             drawing.assigned_to = None
             drawing.locked_at = None
 
         db.commit()
-        
+
     
     @staticmethod
     def get_all_drawings(db: Session, role: UserRole):
