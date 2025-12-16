@@ -12,3 +12,12 @@ export async function fetchDrawings(): Promise<Drawing[]> {
   const response = await api.get<Drawing[]>("/drawings");
   return response.data;
 }
+
+export async function performDrawingAction(
+  drawingId: string,
+  action: "CLAIM" | "SUBMIT" | "APPROVE"
+) {
+  await api.post(`/drawings/${drawingId}/actions`, {
+    action,
+  });
+}

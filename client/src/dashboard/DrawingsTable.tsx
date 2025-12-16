@@ -11,9 +11,13 @@ import {
   Spinner,
   Center,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { fetchDrawings, type Drawing } from "../api/drawings";
+import { performDrawingAction } from "../api/drawings";
+import { getAvailableActions } from "../utils/workflow";
+import { useAuth } from "../auth/RequireAuth";
 
 const statusColor = (status: string) => {
   switch (status) {
@@ -33,15 +37,55 @@ const statusColor = (status: string) => {
 };
 
 export default function DrawingsTable() {
+  const { user } = useAuth();
+  const toast = useToast();
   const [drawings, setDrawings] = useState<Drawing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const refreshDrawings = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchDrawings();
+      setDrawings(data);
+    } catch {
+      setError("Failed to load drawings");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  async function handleAction(
+    drawingId: string,
+    action: "CLAIM" | "SUBMIT" | "APPROVE"
+  ) {
+    try {
+      await performDrawingAction(drawingId, action);
+      toast({
+        title: "Action successful",
+        status: "success",
+        duration: 2000,
+      });
+      refreshDrawings(); // re-fetch list
+    } catch (err: any) {
+      toast({
+        title: "Action failed",
+        description: err?.response?.data?.detail || "Something went wrong",
+        status: "error",
+        duration: 3000,
+      });
+    }
+  }
 
   useEffect(() => {
     fetchDrawings()
       .then(setDrawings)
       .catch(() => setError("Failed to load drawings"))
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    refreshDrawings();
   }, []);
 
   if (loading) {
@@ -81,9 +125,21 @@ export default function DrawingsTable() {
               </Td>
               <Td>{d.assigned_to_name ?? "—"}</Td>
               <Td>
-                <Button size="sm" colorScheme="blue">
-                  Claim
-                </Button>
+                {getAvailableActions(
+                  user.role,
+                  d.status,
+                  d.assigned_to === user.id
+                ).map((action) => (
+                  <Button
+                    key={action}
+                    size="sm"
+                    mr={2}
+                    colorScheme="blue"
+                    onClick={() => handleAction(d.id, action)}
+                  >
+                    {action}
+                  </Button>
+                ))}
               </Td>
             </Tr>
           ))}
