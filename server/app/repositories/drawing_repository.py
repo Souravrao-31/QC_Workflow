@@ -22,34 +22,34 @@ class DrawingRepository:
         user_id: UUID,
         expected_status: str,
     ) -> bool:
-        """
-        Atomically claim a drawing.
-
-        Returns:
-            True  -> claim successful
-            False -> already claimed / invalid state
-        """
-
         result = db.execute(
             text(
                 """
                 UPDATE drawings
                 SET assigned_to = :user_id,
-                    locked_at = now()
+                    locked_at = NOW()
                 WHERE id = :drawing_id
-                  AND status = :expected_status
-                  AND assigned_to IS NULL
+                AND status = :expected_status
+                AND assigned_to IS NULL
                 RETURNING id
                 """
             ),
             {
-                "drawing_id": drawing_id,
-                "user_id": user_id,
+                "drawing_id": str(drawing_id),
+                "user_id": str(user_id),
                 "expected_status": expected_status,
             },
         )
 
-        return result.fetchone() is not None
+        row = result.fetchone()
+
+        if row:
+            db.commit()  
+            return True
+
+        db.rollback()
+        return False
+
 
 #Read
 

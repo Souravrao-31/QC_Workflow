@@ -26,8 +26,8 @@ class DrawingService:
 
         #  Validate action exists
         if action not in WORKFLOW_TRANSITIONS.get(current_state, {}):
-            raise InvalidStateTransition(
-                f"Action {action} not allowed from {current_state}"
+           raise InvalidStateTransition(
+                f"Action '{action}' is not allowed when drawing is in '{current_state.value}' state"
             )
 
         rule = WORKFLOW_TRANSITIONS[current_state][action]
@@ -47,10 +47,10 @@ class DrawingService:
             if not success:
                 raise DrawingAlreadyClaimed()
             return
-
-        # Ownership check for SUBMIT / APPROVE
-        if drawing.assigned_to != user_id:
-            raise NotOwner("Only current assignee can perform this action")
+      # Ownership check only for actions that require ownership
+        if action in {"SUBMIT", "APPROVE"}:
+            if drawing.assigned_to != user_id:
+                raise NotOwner("Only current assignee can perform this action")
 
         # 5️⃣ Transition state
         drawing.status = rule["next"].value
