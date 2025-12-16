@@ -1,0 +1,40 @@
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from jose import jwt, JWTError
+from uuid import UUID
+from sqlalchemy.orm import Session
+from app.core.security import SECRET_KEY, ALGORITHM
+from app.core.database import get_db
+from app.core.security import decode_access_token
+from app.models.user import User
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
+
+class CurrentUser:
+    def __init__(self, user_id: UUID, role: str):
+        self.id = user_id
+        self.role = role
+
+
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> User:
+ 
+    payload = decode_access_token(token)
+
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+        )
+
+    user = db.query(User).filter(User.id == payload.sub).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+        )
+
+    return user
