@@ -57,7 +57,7 @@ export default function DrawingsTable() {
 
   async function handleAction(
     drawingId: string,
-    action: "CLAIM" | "SUBMIT" | "APPROVE"
+    action: "CLAIM" | "SUBMIT" | "APPROVE" | "ASSIGN"
   ) {
     try {
       await performDrawingAction(drawingId, action);
@@ -103,6 +103,30 @@ export default function DrawingsTable() {
       </Center>
     );
   }
+
+  if (drawings.length === 0) {
+    return (
+      <Box bg="white" p={10} rounded="md" shadow="sm" textAlign="center">
+        <Text fontSize="lg" fontWeight="semibold" mb={2}>
+          No drawings available
+        </Text>
+
+        <Text color="gray.500">
+          {user.role === "ADMIN" &&
+            "There are no unassigned drawings at the moment."}
+
+          {user.role === "DRAFTER" &&
+            "No drawings are available for drafting right now."}
+
+          {user.role === "SHIFT_LEAD" &&
+            "No drawings are waiting for First QC."}
+
+          {user.role === "FINAL_QC" && "No drawings are waiting for Final QC."}
+        </Text>
+      </Box>
+    );
+  }
+
   console.log("drawings.....", drawings);
   return (
     <Box bg="white" p={4} rounded="md" shadow="sm">

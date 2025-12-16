@@ -15,7 +15,7 @@ export async function fetchDrawings(): Promise<Drawing[]> {
 
 export async function performDrawingAction(
   drawingId: string,
-  action: "CLAIM" | "SUBMIT" | "APPROVE"
+  action: "CLAIM" | "SUBMIT" | "APPROVE" | "ASSIGN"
 ) {
   await api.post(`/drawings/${drawingId}/actions`, {
     action,
