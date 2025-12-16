@@ -11,3 +11,5 @@ pydantic
 
 python-jose[cryptography]
 passlib[bcrypt]
+
+pydantic_settings

@@ -8,20 +8,12 @@ import {
   Badge,
   Button,
   Box,
+  Spinner,
+  Center,
+  Text,
 } from "@chakra-ui/react";
-
-const mockDrawings = [
-  {
-    id: "D-101",
-    status: "DRAFTING",
-    assigned_to: "Drafter One",
-  },
-  {
-    id: "D-102",
-    status: "FIRST_QC",
-    assigned_to: null,
-  },
-];
+import { useEffect, useState } from "react";
+import { fetchDrawings, type Drawing } from "../api/drawings";
 
 const statusColor = (status: string) => {
   switch (status) {
@@ -41,6 +33,33 @@ const statusColor = (status: string) => {
 };
 
 export default function DrawingsTable() {
+  const [drawings, setDrawings] = useState<Drawing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetchDrawings()
+      .then(setDrawings)
+      .catch(() => setError("Failed to load drawings"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <Center py={20}>
+        <Spinner size="xl" />
+      </Center>
+    );
+  }
+
+  if (error) {
+    return (
+      <Center py={20}>
+        <Text color="red.500">{error}</Text>
+      </Center>
+    );
+  }
+
   return (
     <Box bg="white" p={4} rounded="md" shadow="sm">
       <Table variant="simple">
@@ -54,15 +73,15 @@ export default function DrawingsTable() {
         </Thead>
 
         <Tbody>
-          {mockDrawings.map((d) => (
+          {drawings.map((d) => (
             <Tr key={d.id}>
-              <Td>{d.id}</Td>
+              <Td>{d.id.slice(0, 8)}</Td>
               <Td>
                 <Badge colorScheme={statusColor(d.status)}>
                   {d.status}
                 </Badge>
               </Td>
-              <Td>{d.assigned_to ?? "—"}</Td>
+              <Td>{d.assigned_to_name ?? "—"}</Td>
               <Td>
                 <Button size="sm" colorScheme="blue">
                   Claim

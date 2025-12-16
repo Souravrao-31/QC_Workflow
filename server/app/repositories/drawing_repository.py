@@ -6,12 +6,7 @@ from app.models.enums import DrawingStatus
 
 
 class DrawingRepository:
-    """
-    Repository layer for Drawing-related DB operations.
-    All DB access related to drawings should live here.
-    """
 
-    
     # WRITE OPERATIONS (CONCURRENCY) handle racing events
    
 
@@ -55,7 +50,6 @@ class DrawingRepository:
 
     @staticmethod
     def get_all(db: Session):
-        """Admin: get all drawings"""
         return db.query(Drawing).all()
 
     @staticmethod
