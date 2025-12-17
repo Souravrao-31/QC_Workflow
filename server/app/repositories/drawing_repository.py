@@ -6,7 +6,14 @@ from app.models.enums import DrawingStatus
 
 
 class DrawingRepository:
-   
+
+
+    @staticmethod
+    def list_assigned_to_user(db, user_id):
+        return db.query(Drawing).filter(
+            Drawing.assigned_to == user_id
+        ).all()
+
     @staticmethod
     def list_unassigned(db: Session):
         return (
