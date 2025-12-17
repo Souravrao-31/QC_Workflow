@@ -48,7 +48,7 @@ export default function DrawingsTableView({
                   {d.status}
                 </Badge>
               </Td>
-              <Td>{d.assigned_to_name ?? "—"}</Td>
+              <Td>{d.assigned_to ?? "—"}</Td>
               <Td>
                 {getAvailableActions(
                   user.role,

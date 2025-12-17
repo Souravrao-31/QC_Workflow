@@ -85,7 +85,7 @@ export default function DashboardPage() {
       <TabPanels>
         <TabPanel>
           {available.length === 0 ? (
-            <EmptyState role={user.role} />
+            <EmptyState role={user.role} personal={false}/>
           ) : (
             <DrawingsTableView
               drawings={available}
@@ -97,9 +97,7 @@ export default function DashboardPage() {
 
         <TabPanel>
           {myWork.length === 0 ? (
-            <Box textAlign="center" py={10} color="gray.500">
-              No drawings assigned to you
-            </Box>
+            <EmptyState role={user.role} personal={true} />
           ) : (
             <DrawingsTableView
               drawings={myWork}
