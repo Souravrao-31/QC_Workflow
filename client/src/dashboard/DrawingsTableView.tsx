@@ -43,6 +43,7 @@ export default function DrawingsTableView({
             <Th>Status</Th>
             <Th>Assigned To</Th>
             <Th>Actions</Th>
+            {onRelease && <Th>Release</Th>}
           </Tr>
         </Thead>
 
@@ -70,19 +71,20 @@ export default function DrawingsTableView({
                   </Button>
                 ))}
               </Td>
-
-              {d.assigned_to === user.id &&
-                d.status !== "APPROVED" &&
-                onRelease && (
-                  <Button
-                    size="sm"
-                    colorScheme="red"
-                    variant="outline"
-                    onClick={() => onRelease(d.id)}
-                  >
-                    Release
-                  </Button>
-                )}
+              <Td>
+                {d.assigned_to === user.id &&
+                  d.status !== "APPROVED" &&
+                  onRelease && (
+                    <Button
+                      size="sm"
+                      colorScheme="red"
+                      variant="outline"
+                      onClick={() => onRelease(d.id)}
+                    >
+                      Release
+                    </Button>
+                  )}
+              </Td>
             </Tr>
           ))}
         </Tbody>
