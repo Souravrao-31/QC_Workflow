@@ -12,7 +12,8 @@ export default function Header() {
     clearToken();
     window.location.href = "/";
   };
-  console.log("User Info:", user);
+  const isAuditPage = location.pathname === "/audit";
+  // console.log("User Info:", user);
   return (
     <Flex px={6} py={4} bg="blue.600" color="white" alignItems="center">
       <Heading size="md">QC Workflow System</Heading>
@@ -20,14 +21,27 @@ export default function Header() {
       <Spacer />
 
       {user?.role === "ADMIN" && (
-        <Button
-          size="sm"
-          variant="outline"
-          mr={3}
-          onClick={() => navigate("/audit")}
-        >
-          Audit Logs
-        </Button>
+        <>
+          {isAuditPage ? (
+            <Button
+              size="sm"
+              variant="outline"
+              mr={3}
+              onClick={() => navigate("/dashboard")}
+            >
+              Home
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              mr={3}
+              onClick={() => navigate("/audit")}
+            >
+              Audit Logs
+            </Button>
+          )}
+        </>
       )}
 
       {user && (
