@@ -76,13 +76,6 @@ def my_drawings(
     return DrawingService.get_my_drawings(db, current_user.id)
 
 
-@router.get("/available", response_model=list[DrawingResponse])
-def available_drawings(
-    db: Session = Depends(get_db),
-    current_user: CurrentUser = Depends(get_current_user),
-):
-    return DrawingService.get_available_drawings(db, current_user.role)
-
 
 @router.post("/{drawing_id}/release")
 def release_drawing(

@@ -18,6 +18,9 @@ export async function fetchMyDrawings(): Promise<Drawing[]> {
   return response.data;
 }
 
+export async function performDrawingRelease(id: string) {
+  return api.post(`/drawings/${id}/release`);
+}
 
 export async function performDrawingAction(
   drawingId: string,
