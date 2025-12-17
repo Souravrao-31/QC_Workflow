@@ -27,13 +27,13 @@ class DrawingService:
     ):
         current_state = DrawingStatus(drawing.status)
 
-        # ❌ No actions allowed after approval
+        #  No actions allowed after approval
         if current_state == DrawingStatus.APPROVED:
             raise InvalidStateTransition(
                 "No actions are allowed on an approved drawing"
             )
 
-        # ❌ Invalid action for current state
+        # Invalid action for current state
         if action not in WORKFLOW_TRANSITIONS.get(current_state, {}):
             raise InvalidStateTransition(
                 f"Action '{action}' is not allowed when drawing is in "
@@ -42,7 +42,7 @@ class DrawingService:
 
         rule = WORKFLOW_TRANSITIONS[current_state][action]
 
-        # ❌ Role not allowed
+        # Role not allowed
         if user_role != rule["role"]:
             raise PermissionDenied("Role not allowed")
 
