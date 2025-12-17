@@ -25,8 +25,11 @@ export default function Header() {
           {isAuditPage ? (
             <Button
               size="sm"
-              variant="outline"
+              variant="ghost"
               mr={3}
+              color="white"
+              _hover={{ bg: "whiteAlpha.200" }}
+              _active={{ bg: "whiteAlpha.300" }}
               onClick={() => navigate("/dashboard")}
             >
               Home
@@ -34,8 +37,11 @@ export default function Header() {
           ) : (
             <Button
               size="sm"
-              variant="outline"
+              variant="ghost"
               mr={3}
+              color="white"
+              _hover={{ bg: "whiteAlpha.200" }}
+              _active={{ bg: "whiteAlpha.300" }}
               onClick={() => navigate("/audit")}
             >
               Audit Logs
