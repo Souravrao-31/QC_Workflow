@@ -11,9 +11,9 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { login } from "../api/auth";
 import { saveToken } from "../api/authStorage";
-import { decodeToken } from "../utils/jwt";
 
 export default function LoginPage() {
   const [name, setName] = useState("");
@@ -29,18 +29,13 @@ export default function LoginPage() {
 
     try {
       const { access_token } = await login(name, password);
-
+    
+      //  Save JWT
       saveToken(access_token);
 
-      const payload = decodeToken(access_token);
-
-      // 🔀 Role-based redirect
-      if (payload.role === "ADMIN") {
-        navigate("/dashboard");
-      } else {
-        navigate("/dashboard");
-      }
-    } catch (err) {
+      // Redirect (RequireAuth will validate)
+      navigate("/dashboard");
+    } catch {
       setError("Invalid credentials");
     } finally {
       setLoading(false);
@@ -48,7 +43,13 @@ export default function LoginPage() {
   };
 
   return (
-    <Box minH="100vh" bg="gray.50" display="flex" alignItems="center" justifyContent="center">
+    <Box
+      minH="100vh"
+      bg="gray.50"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+    >
       <Box bg="white" p={8} rounded="md" shadow="md" width="sm">
         <Heading mb={6} textAlign="center">
           QC Workflow Login

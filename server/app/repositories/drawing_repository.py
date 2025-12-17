@@ -6,14 +6,47 @@ from app.models.enums import DrawingStatus
 
 
 class DrawingRepository:
-    """
-    Repository layer for Drawing-related DB operations.
-    All DB access related to drawings should live here.
-    """
-
-    
-    # WRITE OPERATIONS (CONCURRENCY) handle racing events
    
+    @staticmethod
+    def list_unassigned(db: Session):
+        return (
+            db.query(Drawing)
+            .filter(Drawing.status == DrawingStatus.UNASSIGNED)
+            .all()
+        )
+
+    @staticmethod
+    def list_drafting_unclaimed(db: Session):
+        return (
+            db.query(Drawing)
+            .filter(
+                Drawing.status == DrawingStatus.DRAFTING,
+                Drawing.assigned_to.is_(None),
+            )
+            .all()
+        )
+
+    @staticmethod
+    def list_first_qc_unclaimed(db: Session):
+        return (
+            db.query(Drawing)
+            .filter(
+                Drawing.status == DrawingStatus.FIRST_QC,
+                Drawing.assigned_to.is_(None),
+            )
+            .all()
+        )
+
+    @staticmethod
+    def list_final_qc_unclaimed(db: Session):
+        return (
+            db.query(Drawing)
+            .filter(
+                Drawing.status == DrawingStatus.FINAL_QC,
+                Drawing.assigned_to.is_(None),
+            )
+            .all()
+        )
 
     @staticmethod
     def claim_drawing(
@@ -55,7 +88,6 @@ class DrawingRepository:
 
     @staticmethod
     def get_all(db: Session):
-        """Admin: get all drawings"""
         return db.query(Drawing).all()
 
     @staticmethod

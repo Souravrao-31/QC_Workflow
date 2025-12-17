@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoginPage from "./auth/LoginPage";
 import DashboardPage from "./dashboard/DashboardPage";
-import RequireAuth from "./auth/RequireAuth";
+import { RequireAuth } from "./auth/RequireAuth";
 
 export default function App() {
   return (

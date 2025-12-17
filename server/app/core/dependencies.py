@@ -3,7 +3,6 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from uuid import UUID
 from sqlalchemy.orm import Session
-from app.core.security import SECRET_KEY, ALGORITHM
 from app.core.database import get_db
 from app.core.security import decode_access_token
 from app.models.user import User
@@ -20,7 +19,6 @@ def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ) -> User:
- 
     payload = decode_access_token(token)
 
     if not payload:
@@ -29,7 +27,15 @@ def get_current_user(
             detail="Invalid or expired token",
         )
 
-    user = db.query(User).filter(User.id == payload.sub).first()
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload",
+        )
+
+    user = db.query(User).filter(User.id == user_id).first()
 
     if not user:
         raise HTTPException(
@@ -38,3 +44,5 @@ def get_current_user(
         )
 
     return user
+
+

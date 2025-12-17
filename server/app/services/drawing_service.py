@@ -11,7 +11,7 @@ from app.services.exceptions import (
     DrawingAlreadyClaimed,
     NotOwner,
 )
-
+from app.core.dependencies import  CurrentUser
 class DrawingService:
 
     @staticmethod
@@ -80,6 +80,29 @@ class DrawingService:
         if role != UserRole.ADMIN:
             raise PermissionError("Only admin can view all drawings")
         return DrawingRepository.get_all(db)
+    
+    
+    @staticmethod
+    def list_drawings_for_user(
+        db: Session,
+        user: CurrentUser,
+    ):
+        role = user.role
+
+        if role == UserRole.ADMIN:
+            return DrawingRepository.list_unassigned(db)
+
+        if role == UserRole.DRAFTER:
+            return DrawingRepository.list_drafting_unclaimed(db)
+
+        if role == UserRole.SHIFT_LEAD:
+            return DrawingRepository.list_first_qc_unclaimed(db)
+
+        if role == UserRole.FINAL_QC:
+            return DrawingRepository.list_final_qc_unclaimed(db)
+
+        return []
+
     @staticmethod
     def get_my_drawings(db: Session, user_id):
         return DrawingRepository.get_assigned_to_user(db, user_id)
