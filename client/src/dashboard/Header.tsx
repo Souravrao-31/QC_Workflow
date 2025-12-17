@@ -13,7 +13,6 @@ export default function Header() {
     window.location.href = "/";
   };
   const isAuditPage = location.pathname === "/audit";
-  // console.log("User Info:", user);
   return (
     <Flex px={6} py={4} bg="blue.600" color="white" alignItems="center">
       <Heading size="md">QC Workflow System</Heading>
