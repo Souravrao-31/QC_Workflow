@@ -13,7 +13,7 @@ from app.services.exceptions import (
     NotOwner,
 )
 from app.core.dependencies import CurrentUser
-
+from app.repositories.audit_repository import AuditRepository
 
 class DrawingService:
 

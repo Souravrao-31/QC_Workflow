@@ -69,7 +69,7 @@ def seed_drawings(db):
 
     db.add_all(drawings)
     db.commit()
-    print("✅ Drawings seeded")
+    print("Drawings seeded")
 
 
 def main():
