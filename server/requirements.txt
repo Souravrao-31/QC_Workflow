@@ -7,9 +7,9 @@ alembic
 
 python-dotenv
 pydantic
-
+pydantic-settings
 
 python-jose[cryptography]
-passlib[bcrypt]
 
-pydantic_settings
+bcrypt==4.1.2
+passlib[bcrypt]==1.7.4

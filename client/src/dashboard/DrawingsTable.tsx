@@ -1,53 +1,53 @@
 import {
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Badge,
-  Button,
-  Box,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
   Spinner,
   Center,
   Text,
+  Button,
   useToast,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalCloseButton,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { fetchDrawings, type Drawing } from "../api/drawings";
+import {
+  fetchDrawings,
+  fetchMyDrawings,
+  performDrawingRelease,
+  type Drawing,
+} from "../api/drawings";
 import { performDrawingAction } from "../api/drawings";
-import { getAvailableActions } from "../utils/workflow";
 import { useAuth } from "../auth/RequireAuth";
+import DrawingsTableView from "./DrawingsTableView";
+import EmptyState from "./EmptyState";
 
-const statusColor = (status: string) => {
-  switch (status) {
-    case "UNASSIGNED":
-      return "gray";
-    case "DRAFTING":
-      return "blue";
-    case "FIRST_QC":
-      return "orange";
-    case "FINAL_QC":
-      return "purple";
-    case "APPROVED":
-      return "green";
-    default:
-      return "gray";
-  }
-};
-
-export default function DrawingsTable() {
+export default function DashboardPage() {
   const { user } = useAuth();
   const toast = useToast();
-  const [drawings, setDrawings] = useState<Drawing[]>([]);
+
+  const [available, setAvailable] = useState<Drawing[]>([]);
+  const [myWork, setMyWork] = useState<Drawing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const refreshDrawings = async () => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [releaseTarget, setReleaseTarget] = useState<string | null>(null);
+
+  const loadData = async () => {
     try {
       setLoading(true);
-      const data = await fetchDrawings();
-      setDrawings(data);
+      const [a, m] = await Promise.all([fetchDrawings(), fetchMyDrawings()]);
+      setAvailable(a);
+      setMyWork(m);
     } catch {
       setError("Failed to load drawings");
     } finally {
@@ -55,38 +55,47 @@ export default function DrawingsTable() {
     }
   };
 
-  async function handleAction(
-    drawingId: string,
-    action: "CLAIM" | "SUBMIT" | "APPROVE" | "ASSIGN"
-  ) {
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  async function confirmRelease() {
+    if (!releaseTarget) return;
+
     try {
-      await performDrawingAction(drawingId, action);
+      await performDrawingRelease(releaseTarget);
       toast({
-        title: "Action successful",
+        title: "Drawing released",
+        description: "The drawing is now available for others",
         status: "success",
-        duration: 2000,
+        duration: 2500,
       });
-      refreshDrawings(); // re-fetch list
+      loadData();
     } catch (err: any) {
       toast({
-        title: "Action failed",
+        title: "Release failed",
         description: err?.response?.data?.detail || "Something went wrong",
         status: "error",
-        duration: 3000,
       });
+    } finally {
+      setReleaseTarget(null);
+      onClose();
     }
   }
 
-  useEffect(() => {
-    fetchDrawings()
-      .then(setDrawings)
-      .catch(() => setError("Failed to load drawings"))
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    refreshDrawings();
-  }, []);
+  const handleAction = async (id: string, action: any) => {
+    try {
+      await performDrawingAction(id, action);
+      toast({ title: "Action successful", status: "success" });
+      loadData();
+    } catch (err: any) {
+      toast({
+        title: "Action failed",
+        description: err?.response?.data?.detail,
+        status: "error",
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -104,71 +113,69 @@ export default function DrawingsTable() {
     );
   }
 
-  if (drawings.length === 0) {
-    return (
-      <Box bg="white" p={10} rounded="md" shadow="sm" textAlign="center">
-        <Text fontSize="lg" fontWeight="semibold" mb={2}>
-          No drawings available
-        </Text>
-
-        <Text color="gray.500">
-          {user.role === "ADMIN" &&
-            "There are no unassigned drawings at the moment."}
-
-          {user.role === "DRAFTER" &&
-            "No drawings are available for drafting right now."}
-
-          {user.role === "SHIFT_LEAD" &&
-            "No drawings are waiting for First QC."}
-
-          {user.role === "FINAL_QC" && "No drawings are waiting for Final QC."}
-        </Text>
-      </Box>
-    );
-  }
-
-  console.log("drawings.....", drawings);
   return (
-    <Box bg="white" p={4} rounded="md" shadow="sm">
-      <Table variant="simple">
-        <Thead>
-          <Tr>
-            <Th>Drawing Name</Th>
-            <Th>Status</Th>
-            <Th>Assigned To</Th>
-            <Th>Actions</Th>
-          </Tr>
-        </Thead>
+    <>
+      <Tabs variant="enclosed">
+        {user.role !== "ADMIN" && (
+          <TabList>
+            <Tab>Available</Tab>
+            <Tab>My Work</Tab>
+          </TabList>
+        )}
 
-        <Tbody>
-          {drawings.map((d) => (
-            <Tr key={d?.title}>
-              <Td>{d.title.slice(0, 15)}</Td>
-              <Td>
-                <Badge colorScheme={statusColor(d.status)}>{d.status}</Badge>
-              </Td>
-              <Td>{d.assigned_to_name ?? "—"}</Td>
-              <Td>
-                {getAvailableActions(
-                  user.role,
-                  d.status,
-                  d.assigned_to === user.id
-                ).map((action) => (
-                  <Button
-                    key={action}
-                    size="sm"
-                    mr={2}
-                    colorScheme="blue"
-                    onClick={() => handleAction(d.id, action)}
-                  >
-                    {action}
-                  </Button>
-                ))}
-              </Td>
-            </Tr>
-          ))}
-        </Tbody>
-      </Table>
-    </Box>
+        <TabPanels>
+          <TabPanel>
+            {available.length === 0 ? (
+              <EmptyState role={user.role} personal={false} />
+            ) : (
+              <DrawingsTableView
+                drawings={available}
+                user={user}
+                onAction={handleAction}
+              />
+            )}
+          </TabPanel>
+
+          {/* MY WORK (non-admin only) */}
+          {user.role !== "ADMIN" && (
+            <TabPanel>
+              {myWork.length === 0 ? (
+                <EmptyState role={user.role} personal={true} />
+              ) : (
+                <DrawingsTableView
+                  drawings={myWork}
+                  user={user}
+                  onAction={handleAction}
+                  onRelease={(id: string) => {
+                    setReleaseTarget(id);
+                    onOpen();
+                  }}
+                />
+              )}
+            </TabPanel>
+          )}
+        </TabPanels>
+      </Tabs>
+
+      {/* RELEASE CONFIRMATION MODAL */}
+      <Modal isOpen={isOpen} onClose={onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Release drawing?</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            This will make the drawing available for others to claim.
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onClose}>
+              Cancel
+            </Button>
+            <Button colorScheme="red" onClick={confirmRelease}>
+              Release
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
   );
 }

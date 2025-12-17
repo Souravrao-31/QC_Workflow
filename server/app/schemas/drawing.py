@@ -9,6 +9,7 @@ class DrawingResponse(BaseModel):
     title: str
     status: str
     assigned_to: Optional[UUID]
+    assigned_to_name: Optional[str] = None
     created_at: datetime
 
     class Config:

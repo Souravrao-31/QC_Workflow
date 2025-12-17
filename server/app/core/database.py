@@ -4,15 +4,24 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 import os
 
+
+DATABASE_URL = os.getenv("DATABASE_URL") or settings.DATABASE_URL
+
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is not set")
+
+
 engine = create_engine(
-    os.getenv("DATABASE_URL"),
+    DATABASE_URL,
     pool_pre_ping=True,
+    future=True,
 )
 
 SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
     bind=engine,
+    class_=Session,
 )
 
 

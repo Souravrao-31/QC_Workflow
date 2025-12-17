@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from app.api.drawings import router as drawings_router
 from app.api.auth import router as auth_router
 from app.api.admin_users import router as admin_users_router
+from app.api.audit import router as audit_router
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
@@ -21,6 +22,7 @@ app.add_middleware(
 app.include_router(drawings_router)
 app.include_router(auth_router)
 app.include_router(admin_users_router)
+app.include_router(audit_router)
 
 
 @app.get("/health")

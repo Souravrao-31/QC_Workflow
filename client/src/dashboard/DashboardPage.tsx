@@ -3,6 +3,7 @@ import Header from "./Header";
 import Footer from "./Footer";
 import DrawingsTable from "./DrawingsTable";
 
+
 export default function DashboardPage() {
   return (
     <Box minH="100vh" display="flex" flexDirection="column">
