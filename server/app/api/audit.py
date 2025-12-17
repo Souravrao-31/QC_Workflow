@@ -14,10 +14,14 @@ def list_audit_logs(
     db: Session = Depends(get_db),
     current_user: CurrentUser = Depends(get_current_user),
 ):
-    # Admin sees all, others see their drawings only
+    q = db.query(AuditLog)
+
+    if current_user.role != "ADMIN":
+        q = q.filter(AuditLog.user_id == current_user.id)
+
     return (
-        db.query(AuditLog)
-        .order_by(AuditLog.created_at.desc())
+        q.order_by(AuditLog.created_at.desc())
         .limit(200)
         .all()
     )
+

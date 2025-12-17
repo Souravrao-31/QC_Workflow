@@ -17,7 +17,6 @@ from app.repositories.audit_repository import AuditRepository
 
 class DrawingService:
 
-
     @staticmethod
     def perform_action(
         db: Session,
@@ -28,57 +27,85 @@ class DrawingService:
     ):
         current_state = DrawingStatus(drawing.status)
 
+        # ❌ No actions allowed after approval
         if current_state == DrawingStatus.APPROVED:
             raise InvalidStateTransition(
                 "No actions are allowed on an approved drawing"
             )
 
-        # Validate action
+        # ❌ Invalid action for current state
         if action not in WORKFLOW_TRANSITIONS.get(current_state, {}):
             raise InvalidStateTransition(
-                f"Action '{action}' is not allowed when drawing is in '{current_state.value}' state"
+                f"Action '{action}' is not allowed when drawing is in "
+                f"'{current_state.value}' state"
             )
 
         rule = WORKFLOW_TRANSITIONS[current_state][action]
 
-        # Validate role
+        # ❌ Role not allowed
         if user_role != rule["role"]:
             raise PermissionDenied("Role not allowed")
 
-        # CLAIM (atomic)
+        # -----------------------------------------------------
+        # CLAIM (atomic DB operation)
+        # -----------------------------------------------------
         if action == "CLAIM":
             success = DrawingRepository.claim_drawing(
                 db=db,
-                drawing_id=UUID(str(drawing.id)),
+                drawing_id=drawing.id,
                 user_id=user_id,
                 expected_status=current_state.value,
             )
+
             if not success:
                 raise DrawingAlreadyClaimed()
 
+            # 🔍 Audit log
+            AuditRepository.create(
+                    db=db,
+                    drawing_id=drawing.id,
+                    user_id=user_id,
+                    user_role=user_role,
+                    action="CLAIM",
+                    from_status=current_state.value,
+                    to_status=current_state.value,
+            )
+
             db.commit()
-            db.expire_all()
+            db.expire_all() 
             return
 
-        # Refresh after possible raw SQL
+     
         db.refresh(drawing)
 
-        # Ownership check
+     
         if action in {"SUBMIT", "APPROVE"}:
-            if str(drawing.assigned_to) != str(user_id):
+            if drawing.assigned_to != user_id:
                 raise NotOwner("Only current assignee can perform this action")
 
-        # Transition
-        drawing.status = rule["next"].value
+        from_status = drawing.status
+        to_status = rule["next"].value
 
-        # Release lock if needed
+       
+        drawing.status = to_status
+
+        # Release lock if workflow says so
         if not rule["lock"]:
             drawing.assigned_to = None
             drawing.locked_at = None
 
+        # 🔍 Audit log
+        AuditRepository.create(
+            db=db,
+            drawing_id=drawing.id,
+            user_id=user_id,
+            user_role=user_role,
+            action=action,
+            from_status=from_status,
+            to_status=to_status,
+        )
+
         db.commit()
-
-
 
     @staticmethod
     def list_drawings_for_user(
@@ -158,5 +185,15 @@ class DrawingService:
 
         if not success:
             raise NotOwner("You do not own this drawing")
+        
+        AuditRepository.create(
+            db=db,
+            drawing_id=drawing.id,
+            user_id=user_id,
+            user_role=None,
+            action="Release",
+            from_status=None,
+            to_status=None,
+        )
 
         db.commit()
