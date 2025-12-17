@@ -8,8 +8,22 @@ export interface Drawing {
   title: string
 }
 
+export type AuditLog = {
+  id: string;
+  drawing_title: string;
+  user_name: string;
+  action: string;
+  from_status: string | null;
+  to_status: string | null;
+  created_at: string;
+};
 export async function fetchDrawings(): Promise<Drawing[]> {
   const response = await api.get<Drawing[]>("/drawings");
+  return response.data;
+}
+
+export async function fetchAudit(): Promise<AuditLog[]> {
+  const response = await api.get<AuditLog[]>("/audit");
   return response.data;
 }
 

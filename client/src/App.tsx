@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoginPage from "./auth/LoginPage";
 import DashboardPage from "./dashboard/DashboardPage";
+import AuditPage from "./dashboard/AuditPage";
 import { RequireAuth } from "./auth/RequireAuth";
 
 export default function App() {
@@ -13,6 +14,15 @@ export default function App() {
           element={
             <RequireAuth>
               <DashboardPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/audit"
+          element={
+            <RequireAuth>
+              <AuditPage />
             </RequireAuth>
           }
         />
