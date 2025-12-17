@@ -19,9 +19,24 @@ def list_audit_logs(
     if current_user.role != "ADMIN":
         q = q.filter(AuditLog.user_id == current_user.id)
 
-    return (
+    logs = (
         q.order_by(AuditLog.created_at.desc())
         .limit(200)
         .all()
     )
+    return [
+        AuditLogResponse(
+            id=l.id,
+            action=l.action,
+            from_status=l.from_status,
+            to_status=l.to_status,
+            user_role=l.user_role,
+            created_at=l.created_at,
+            drawing_id=l.drawing_id,
+            drawing_title=l.drawing.title,
+            user_id=l.user_id,
+            user_name=l.user.name,
+        )
+        for l in logs
+    ]
 
