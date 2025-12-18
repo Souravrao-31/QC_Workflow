@@ -118,3 +118,4 @@ npm run dev
 
 
 
+## Built as a real-world QC workflow system with production-level structure, auditability, and deployment in mind.
