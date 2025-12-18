@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  backend:
+    build: .
+    container_name: qc_backend
+    env_file:
+      - .env.docker
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    command: >
+      sh -c "
+      alembic upgrade head &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000
+      "
+
+  db:
+    image: postgres:15
+    container_name: qc_postgres_new
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: qc_workflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
