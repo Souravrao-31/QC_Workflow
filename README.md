@@ -19,16 +19,6 @@ This system solves those problems by enforcing a **strict workflow**, **role-bas
 
 ---
 
-## What This System Does
-
-- Manages drawings through a defined QC lifecycle
-- Enforces role-based actions at each stage
-- Allows users to claim, submit, approve, or release drawings
-- Provides full audit logs for every state transition
-- Separates **Available Work** and **My Work**
-- Designed for future real-time updates (polling / WebSockets)
-
----
 
 ## Workflow Overview
 
@@ -42,7 +32,17 @@ FINAL_QC
 ↓ APPROVE (Final QC)
 APPROVED
 
+---
 
+
+## What This System Does
+
+- Manages drawings through a defined QC lifecycle
+- Enforces role-based actions at each stage
+- Allows users to claim, submit, approve, or release drawings
+- Provides full audit logs for every state transition
+- Separates **Available Work** and **My Work**
+- Designed for future real-time updates (polling / WebSockets)
 - Only allowed actions are exposed in the UI
 - Invalid actions are blocked at the API level
 - Ownership is enforced for submit/approve actions
@@ -95,9 +95,11 @@ uvicorn app.main:app --reload
 ~~~
 
 ## Frontend Setup
+~~~
 cd client
 npm install
 npm run dev
+~~~
 
 
 ## Authentication Flow
