@@ -49,7 +49,7 @@ APPROVED
 
 ---
 
-## 👥 Roles & Permissions
+## Roles & Permissions
 
 | Role        | Responsibilities |
 |-------------|------------------|
@@ -60,7 +60,7 @@ APPROVED
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 ### Backend
 - **FastAPI** – API framework
