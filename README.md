@@ -7,8 +7,6 @@ Built to provide **clear ownership, traceability, and accountability** across te
 
 ##  Problem Statement
 
-In many engineering and design organizations:
-
 - Drawings pass through multiple roles (Drafter → QC → Final Approval)
 - Ownership is unclear during transitions
 - Status changes are not traceable
@@ -16,6 +14,16 @@ In many engineering and design organizations:
 - Manual coordination leads to delays and errors
 
 This system solves those problems by enforcing a **strict workflow**, **role-based actions**, and **complete audit logging**.
+
+---
+
+##  Design Principles
+
+- Clear separation of concerns
+- Repository + Service pattern
+- Defensive backend validation
+- Minimal, readable UI
+- Easy to extend workflow states and roles
 
 ---
 
